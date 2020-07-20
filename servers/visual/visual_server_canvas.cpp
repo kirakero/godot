@@ -58,10 +58,16 @@ void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2
 		if (child_items[i]->visible) {
 			if (r_items) {
 				r_items[r_index] = child_items[i];
+                p_transform.elements[2][1] = p_transform.elements[2][1] - child_items[i]->z_index * 64;
 				child_items[i]->ysort_modulate = p_modulate;
 				child_items[i]->ysort_xform = p_transform;
-				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.elements[2]);
-				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : NULL;
+				if (child_items[i]->z_index == 0) {
+                    child_items[i]->ysort_pos.x = p_canvas_item->z_index;
+                } else {
+                    child_items[i]->ysort_pos.x = child_items[i]->z_index;
+                }
+    			child_items[i]->ysort_pos.y = p_transform.xform(child_items[i]->xform.elements[2]).y + child_items[i]->ysort_pos.x * 64;
+                child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : NULL;
 			}
 
 			r_index++;
