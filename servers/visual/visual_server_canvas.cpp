@@ -58,8 +58,6 @@ void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2
 		if (child_items[i]->visible) {
 			if (r_items) {
 				r_items[r_index] = child_items[i];
-				// change the y position to reflect z-index as Z coordinate
-                p_transform.elements[2][1] = p_transform.elements[2][1] - child_items[i]->z_index;
 				child_items[i]->ysort_modulate = p_modulate;
 				child_items[i]->ysort_xform = p_transform;
 				if (child_items[i]->z_index == 0) {
@@ -67,8 +65,9 @@ void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2
                 } else {
                     child_items[i]->ysort_pos.x = child_items[i]->z_index;
                 }
-				// change the y-sort position to reflect z-index as Z coordinate
-    			child_items[i]->ysort_pos.y = p_transform.xform(child_items[i]->xform.elements[2]).y + child_items[i]->ysort_pos.x;
+                // change the y-sort position to reflect z-index as Z coordinate
+                child_items[i]->ysort_xform.elements[2][1] = p_transform.elements[2][1] - child_items[i]->z_index;
+    			child_items[i]->ysort_pos.y = p_transform.xform(child_items[i]->xform.elements[2]).y;// + child_items[i]->ysort_pos.x;
                 child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : NULL;
 			}
 
@@ -181,6 +180,8 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 	if ((!ci->commands.empty() && p_clip_rect.intersects(global_rect, true)) || ci->vp_render || ci->copy_back_buffer) {
 		//something to draw?
 		ci->final_transform = xform;
+        // change the y position to reflect z-index as Z coordinate
+        ci->final_transform.translate(0, -ci->ysort_pos.x);
 		ci->final_modulate = Color(modulate.r * ci->self_modulate.r, modulate.g * ci->self_modulate.g, modulate.b * ci->self_modulate.b, modulate.a * ci->self_modulate.a);
 		ci->global_rect_cache = global_rect;
 		ci->global_rect_cache.position -= p_clip_rect.position;
